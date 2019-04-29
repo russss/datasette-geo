@@ -30,12 +30,8 @@ def extra_css_urls(template, database, table, datasette):
 @hookimpl
 def extra_body_script(template, database, table, datasette):
     if get_geo_column(datasette, database, table) is not None:
-        bounds = datasette.inspect()[database]['geo']['bounds'][table]
-        options = {
-            "bounds": bounds,
-            "database": database,
-            "table": table,
-        }
+        bounds = datasette.inspect()[database]["geo"]["bounds"][table]
+        options = {"bounds": bounds, "database": database, "table": table}
         return "geo_init_map({});".format(json.dumps(options))
     return ""
 
@@ -44,7 +40,8 @@ def extra_body_script(template, database, table, datasette):
 def prepare_sanic(app, datasette):
     mvt = MVTServer(datasette)
     app.add_route(
-        mvt.tile_endpoint, r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>/<z:int>/<x:int>/<y:int>.mvt"
+        mvt.tile_endpoint,
+        r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>/<z:int>/<x:int>/<y:int>.mvt",
     )
     app.add_route(
         mvt.tilejson_endpoint, r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>.json"
@@ -65,6 +62,8 @@ def inspect(database, conn):
 @hookimpl
 def register_output_renderer(datasette):
     return {
-        'extension': 'geojson',
-        'callback': lambda args, data, view_name: geojson_render(datasette, args, data, view_name)
+        "extension": "geojson",
+        "callback": lambda args, data, view_name: geojson_render(
+            datasette, args, data, view_name
+        ),
     }
