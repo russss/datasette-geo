@@ -1,8 +1,11 @@
 from datasette import hookimpl
+from datasette.utils import detect_spatialite
 from shapely import wkt
 
 
 def get_spatial_tables(conn):
+    if not detect_spatialite(conn):
+        return {}
     spatial_tables = {}
 
     c = conn.cursor()

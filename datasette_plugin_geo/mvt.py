@@ -61,6 +61,7 @@ class MVTServer(object):
             geo_column=geo_column,
             index_query=spatial_index_query(table, polygon_from_bounds(bounds)),
         )
+        # TODO: catch InterruptedError here
         res = await self.datasette.execute(db_name, sql)
 
         return [self.layer_from_result(table, res)]
@@ -80,7 +81,9 @@ class MVTServer(object):
         )
 
         return response.raw(
-            mvt, headers={"Content-Type": "application/vnd.mapbox-vector-tile"}
+            mvt, headers={
+                "Content-Type": "application/vnd.mapbox-vector-tile"
+            }
         )
 
     async def tilejson_endpoint(self, request, db_name, table):

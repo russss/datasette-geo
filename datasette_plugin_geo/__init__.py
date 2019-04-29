@@ -1,6 +1,7 @@
 import json
 from datasette import hookimpl
-from .web import MVTServer
+from .mvt import MVTServer
+from .geojson import geojson_render
 from .util import get_geo_column
 from .inspect import get_spatial_tables, get_bounds
 
@@ -33,7 +34,7 @@ def extra_body_script(template, database, table, datasette):
         options = {
             "bounds": bounds,
             "database": database,
-            "table": table
+            "table": table,
         }
         return "geo_init_map({});".format(json.dumps(options))
     return ""
@@ -41,12 +42,12 @@ def extra_body_script(template, database, table, datasette):
 
 @hookimpl
 def prepare_sanic(app, datasette):
-    s = MVTServer(datasette)
+    mvt = MVTServer(datasette)
     app.add_route(
-        s.tile_endpoint, r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>/<z:int>/<x:int>/<y:int>.mvt"
+        mvt.tile_endpoint, r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>/<z:int>/<x:int>/<y:int>.mvt"
     )
     app.add_route(
-        s.tilejson_endpoint, r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>.json"
+        mvt.tilejson_endpoint, r"/-/tiles/<db_name:[^/]+>/<table:[^/]+?>.json"
     )
 
 
@@ -58,4 +59,12 @@ def inspect(database, conn):
             "spatial_tables": spatial_tables,
             "bounds": get_bounds(conn, spatial_tables),
         }
+    }
+
+
+@hookimpl
+def register_output_renderer(datasette):
+    return {
+        'extension': 'geojson',
+        'callback': lambda args, data, view_name: geojson_render(datasette, args, data, view_name)
     }
