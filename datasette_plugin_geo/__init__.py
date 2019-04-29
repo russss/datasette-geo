@@ -2,7 +2,7 @@ import json
 from datasette import hookimpl
 from .mvt import MVTServer
 from .geojson import geojson_render
-from .util import get_geo_column
+from .util import get_geo_column, from_spatialite_geom
 from .inspect import get_spatial_tables, get_bounds
 
 
@@ -67,3 +67,14 @@ def register_output_renderer(datasette):
             datasette, args, data, view_name
         ),
     }
+
+
+@hookimpl
+def render_cell(value, column, table, database, datasette):
+    if get_geo_column(datasette, database, table) != column:
+        return None
+    geom = from_spatialite_geom(value)
+    if geom.geom_type == 'Point':
+        return "{:.5}, {:.5}".format(geom.coords[0][0], geom.coords[0][1])
+    else:
+        return "<{}>".format(geom.geom_type)
