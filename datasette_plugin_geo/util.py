@@ -1,6 +1,8 @@
 from shapely import wkb
+from functools import lru_cache
 
 
+@lru_cache()
 def get_geo_column(datasette, database, table):
     if database is None or table is None:
         return None
