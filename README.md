@@ -4,14 +4,18 @@
 
 A plugin to make Spatialite databases effortlessly explorable with [Datasette](https://github.com/simonw/datasette).
 
-![Datasette Geo Screenshot](doc/screenshot.png)
-
 ## Features
 
 * Better representation of Spatialite geometries in table views
 * Fast, scalable map viewing using Mapbox GL and an integrated Mapbox Vector Tile server
 * GeoJSON export endpoints
 * Maybe more?
+
+![Datasette Geo Screenshot](doc/screenshot.png)
+
+## Installation
+As covered above, please don't try to install this yet. It currently relies on a raft of patches to Datasette, which will
+hopefully be merged soon.
 
 ## Database Preparation
 The database you're using needs to have the geographic data stored in Spatialite geometry columns. These columns must be indexed, which you can do with the following SQL:
