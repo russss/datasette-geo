@@ -13,6 +13,7 @@
 	overflow-y: scroll;
 	margin-right: -8px;
 	margin-top: 5px;
+	padding-right: 3px;
 }
 
 .datasette-geo-popup .datasette-geo-key {
