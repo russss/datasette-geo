@@ -24,7 +24,7 @@ function geo_init_map(options) {
     ],
   };
 
-  if (!options['primary_key']) {
+  if (options['view_name'] == 'table') {
     style['sources']['datasette'] = {
       type: 'vector',
       url: '/-/tiles/' + options['database'] + '/' + options['table'] + '.json',
@@ -51,21 +51,52 @@ function geo_init_map(options) {
           'circle-stroke-color': '#999999',
         },
       });
-  } else {
+    initMap(options, style, new mapboxgl.LngLatBounds(
+      [options['bounds'][0], options['bounds'][1]],
+      [options['bounds'][2], options['bounds'][3]],
+    ));
+  } else if (options['view_name'] == 'row') {
+    fetch(window.location.href + ".geojson").then(response => response.json()).then(geojson => {
+    style['sources']['point_geojson'] = {
+      type: 'geojson',
+      data: geojson,
+    };
 
-
+    style['layers'].push({
+        id: 'datasette_point',
+        type: 'circle',
+        source: 'point_geojson',
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 2, 10, 5],
+          'circle-stroke-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            6,
+            0,
+            10,
+            2,
+          ],
+          'circle-color': '#6B7AE8',
+          'circle-stroke-color': '#999999',
+        },
+      });
+      var bounds = new mapboxgl.LngLatBounds();
+      bounds.extend(geojson.geometry.coordinates);
+      initMap(options, style, bounds);
+    })
   }
+}
 
+function initMap(options, style, bounds) {
   var map_container = document.getElementById('datasette-geo-map');
   map_container.style.width = '100%';
   map_container.style.height = '500px';
   var map = new mapboxgl.Map({
     container: 'datasette-geo-map',
     style: style,
-    bounds: new mapboxgl.LngLatBounds(
-      [options['bounds'][0], options['bounds'][1]],
-      [options['bounds'][2], options['bounds'][3]],
-    ),
+    bounds: bounds,
+    fitBoundsOptions: {maxZoom: 10}
   });
   register_popup(options, map, 'datasette_point');
 }
@@ -77,12 +108,12 @@ function register_popup(options, map, layer) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
     var url = `/${options['database']}/${options['table']}/${
-      e.features[0].properties['uid']
+      e.features[0].properties['uid'] || e.features[0].properties['id']
     }`;
     fetch(url + '.json')
       .then(response => response.json())
       .then(data => {
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({className: 'datasette-geo-popup'})
           .setLngLat(coordinates)
           .setHTML(render_popup(data, url))
           .addTo(map);
@@ -101,12 +132,15 @@ function register_popup(options, map, layer) {
 function render_popup(data, url) {
   var html = `<a href="${url}">View Row</a>`;
 
-  html += '<table>';
+  html += '<div class="datasette-geo-data">';
   for (var i = 0; i < data.rows[0].length; i++) {
     if (typeof data.rows[0][i] != 'object') {
-      html += `<tr><th>${data.columns[i]}</th><td>${data.rows[0][i]}</td></tr>`;
+      html += `<div>
+                <div class="datasette-geo-key">${data.columns[i]}</div>
+                <div class="datasette-geo-value">${data.rows[0][i]}</div>
+               </div>`;
     }
   }
-  html += '</table>';
+  html += '</div>';
   return html;
 }

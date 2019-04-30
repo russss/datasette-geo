@@ -21,17 +21,18 @@ def extra_js_urls(template, database, table, datasette):
 def extra_css_urls(template, database, table, datasette):
     if get_geo_column(datasette, database, table) is not None:
         return [
-            {"url": "https://api.tiles.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css"}
+            {"url": "https://api.tiles.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css"},
+            {"url": "/-/static-plugins/datasette_plugin_geo/main.css"},
         ]
     else:
         return []
 
 
 @hookimpl
-def extra_body_script(template, database, table, datasette):
+def extra_body_script(template, database, table, view_name, datasette):
     if get_geo_column(datasette, database, table) is not None:
         bounds = datasette.inspect()[database]["geo"]["bounds"][table]
-        options = {"bounds": bounds, "database": database, "table": table}
+        options = {"bounds": bounds, "database": database, "table": table, "view_name": view_name}
         return "geo_init_map({});".format(json.dumps(options))
     return ""
 

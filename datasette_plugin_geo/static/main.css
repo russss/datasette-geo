@@ -1,0 +1,24 @@
+
+.datasette-geo-popup {
+	max-width: 300px;
+}
+
+.datasette-geo-data {
+	max-height: 250px;
+	overflow-y: scroll;
+	margin-right: -8px;
+	margin-top: 5px;
+}
+
+.datasette-geo-popup .datasette-geo-key {
+	font-weight: bold;
+	display: inline;
+}
+
+.datasette-geo-popup .datasette-geo-key::after {
+	content: ": ";
+}
+
+.datasette-geo-popup .datasette-geo-value {
+	display: inline;
+}
