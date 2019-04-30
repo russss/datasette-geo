@@ -9,7 +9,13 @@ setup(
     url='https://github.com/russss/datasette-geo',
     license='Apache License, Version 2.0',
     version=VERSION,
-    py_modules=['datasette_plugin_geo'],
+    packages=['datasette_plugin_geo'],
+    package_data={
+        'datasette_plugin_geo': [
+            'static/*',
+            'templates/*.html'
+        ]
+    },
     entry_points={
         'datasette': [
             'plugin_geo = datasette_plugin_geo'
