@@ -114,6 +114,10 @@ class MVTServer(object):
             raise NotFound("Not a spatial table")
         bounds = self.datasette.inspect()[db_name]["geo"]["bounds"][table]
 
+        url_scheme = request.scheme
+        if request.headers.get('X-Forwarded-Proto') == 'https':
+            url_scheme = 'https'
+
         return response.json(
             {
                 "tilejson": "2.2.0",
@@ -128,7 +132,7 @@ class MVTServer(object):
                 "maxzoom": 17,
                 "tiles": [
                     "{scheme}://{host}/-/tiles/{db_name}/{table}/{{z}}/{{x}}/{{y}}.mvt".format(
-                        scheme=request.scheme,
+                        scheme=url_scheme,
                         host=request.host,
                         db_name=db_name,
                         table=table,
