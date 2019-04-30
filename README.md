@@ -2,10 +2,10 @@
 
 **Work in progress. Don't expect this to work yet, especially since it depends on a lot of unmerged Datasette features.**
 
-A plugin to make Spatialite databases effortlessly explorable with [Datasette](https://github.com/simonw/datasette).
+A [Datasette](https://github.com/simonw/datasette) plugin to make [Spatialite](https://www.gaia-gis.it/fossil/libspatialite/index) databases effortlessly explorable.
 
 ## Features
-
+* [All the good stuff from Datasette](https://datasette.readthedocs.io/en/stable/)
 * Better representation of Spatialite geometries in table views
 * Fast, scalable map viewing using Mapbox GL and an integrated Mapbox Vector Tile server
 * GeoJSON export endpoints
