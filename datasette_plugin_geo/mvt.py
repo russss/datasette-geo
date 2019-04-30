@@ -2,7 +2,8 @@ import mapbox_vector_tile
 import mercantile
 import shapely.geometry
 from sanic import response
-from sanic.exceptions import NotFound
+from sanic.exceptions import NotFound, ServiceUnavailable
+from datasette.utils import InterruptedError
 import time
 from .util import get_geo_column
 
@@ -61,9 +62,12 @@ class MVTServer(object):
             geo_column=geo_column,
             index_query=spatial_index_query(table, polygon_from_bounds(bounds)),
         )
-        # TODO: catch InterruptedError here
         start = time.time()
-        res = await self.datasette.execute(db_name, sql)
+        try:
+            res = await self.datasette.execute(db_name, sql)
+        except InterruptedError:
+            raise ServiceUnavailable("Query timed out")
+
         print("SQL: {:.3}s".format(time.time() - start))
 
         return [self.layer_from_result(table, res)]
@@ -93,8 +97,16 @@ class MVTServer(object):
             )
         )
 
+        ttl = self.datasette.config("default_cache_ttl")
+        if int(ttl) == 0:
+            ttl_header = "no-cache"
+        else:
+            ttl_header = "max-age={}".format(ttl)
         return response.raw(
-            mvt, headers={"Content-Type": "application/vnd.mapbox-vector-tile"}
+            mvt, headers={
+                "Content-Type": "application/vnd.mapbox-vector-tile",
+                "Cache-Control": ttl_header
+            }
         )
 
     async def tilejson_endpoint(self, request, db_name, table):
