@@ -4,6 +4,8 @@
 
 A plugin to make Spatialite databases effortlessly explorable with [Datasette](https://github.com/simonw/datasette).
 
+![Datasette Geo Screenshot](doc/screenshot.png)
+
 ## Features
 
 * Better representation of Spatialite geometries in table views
