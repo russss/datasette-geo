@@ -3,7 +3,7 @@ import mercantile
 import shapely.geometry
 from sanic import response
 from sanic.exceptions import NotFound
-
+import time
 from .util import get_geo_column
 
 
@@ -62,50 +62,68 @@ class MVTServer(object):
             index_query=spatial_index_query(table, polygon_from_bounds(bounds)),
         )
         # TODO: catch InterruptedError here
+        start = time.time()
         res = await self.datasette.execute(db_name, sql)
+        print("SQL: {:.3}s".format(time.time() - start))
 
         return [self.layer_from_result(table, res)]
 
     async def tile_endpoint(self, request, db_name, table, z, x, y):
+        start = time.time()
         if not valid_zoom(z):
             raise NotFound("Invalid zoom value")
-        if not self.datasette.table_exists(db_name, table):
+        if not await self.datasette.table_exists(db_name, table):
             raise NotFound("Table does not exist")
         geo_column = get_geo_column(self.datasette, db_name, table)
         if geo_column is None:
             raise NotFound("Not a spatial table")
 
+        fetch = time.time()
+        data = await self.get_features(db_name, table, geo_column, z, x, y)
+        encode = time.time()
         mvt = mapbox_vector_tile.encode(
-            await self.get_features(db_name, table, geo_column, z, x, y),
-            quantize_bounds=mercantile.xy_bounds(x, y, z),
+            data, quantize_bounds=mercantile.xy_bounds(x, y, z)
+        )
+
+        now = time.time()
+        print(
+            "[{}/{}/{}/{}/{}] Total: {:.3}s (init: {:.3}s + fetch: {:.3}s + encode: {:.3}s)".format(
+                db_name, table, z, x, y,
+                now - start, fetch - start, encode - fetch, now - encode
+            )
         )
 
         return response.raw(
-            mvt, headers={
-                "Content-Type": "application/vnd.mapbox-vector-tile"
-            }
+            mvt, headers={"Content-Type": "application/vnd.mapbox-vector-tile"}
         )
 
     async def tilejson_endpoint(self, request, db_name, table):
-        # TODO: expose name/attribution metadata here
-        if not self.datasette.table_exists(db_name, table):
+        if not await self.datasette.table_exists(db_name, table):
             raise NotFound("Table does not exist")
         geo_column = get_geo_column(self.datasette, db_name, table)
         if geo_column is None:
             raise NotFound("Not a spatial table")
-        bounds = self.datasette.inspect()[db_name]['geo']['bounds'][table]
+        bounds = self.datasette.inspect()[db_name]["geo"]["bounds"][table]
 
-        return response.json({
-            "tilejson": "2.2.0",
-            "name": "Datasette Geo",
-            "attribution": "TODO",
-            "bounds": bounds,
-            "center": [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2, 0],
-            "minzoom": 0,
-            "maxzoom": 17,
-            "tiles": [
-                "{scheme}://{host}/-/tiles/{db_name}/{table}/{{z}}/{{x}}/{{y}}.mvt".format(
-                    scheme=request.scheme, host=request.host, db_name=db_name, table=table
-                )
-            ]
-        })
+        return response.json(
+            {
+                "tilejson": "2.2.0",
+                "name": self.datasette.metadata("title", db_name, table),
+                "attribution": '<a href="{source_url}">{source}</a>'.format(
+                    source=self.datasette.metadata("source", db_name, table),
+                    source_url=self.datasette.metadata("source_url", db_name, table),
+                ),
+                "bounds": bounds,
+                "center": [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2, 0],
+                "minzoom": 0,
+                "maxzoom": 17,
+                "tiles": [
+                    "{scheme}://{host}/-/tiles/{db_name}/{table}/{{z}}/{{x}}/{{y}}.mvt".format(
+                        scheme=request.scheme,
+                        host=request.host,
+                        db_name=db_name,
+                        table=table,
+                    )
+                ],
+            }
+        )

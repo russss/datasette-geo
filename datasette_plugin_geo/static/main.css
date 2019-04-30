@@ -1,4 +1,9 @@
 
+#datasette-geo-map {
+	border: 1px solid #ddd;
+	margin-bottom: 5px;
+}
+
 .datasette-geo-popup {
 	max-width: 300px;
 }
