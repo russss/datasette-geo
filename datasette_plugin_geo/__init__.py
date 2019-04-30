@@ -50,7 +50,12 @@ def extra_body_script(template, database, table, view_name, datasette):
         config = datasette.plugin_config(
             "datasette-geo", database=database, table=table
         ) or {}
-        bounds = datasette.inspect()[database]["geo"]["bounds"][table]
+
+        bounds = datasette.inspect()[database]["geo"]["bounds"].get(table)
+        if bounds is None:
+            # No valid data here.
+            return ""
+
         options = {
             "bounds": bounds,
             "database": database,
@@ -101,6 +106,8 @@ def render_cell(value, column, table, database, datasette):
     if get_geo_column(datasette, database, table) != column:
         return None
     geom = from_spatialite_geom(value)
+    if geom is None:
+        return "<null>"
     if geom.geom_type == "Point":
         return "{:.5}, {:.5}".format(geom.coords[0][0], geom.coords[0][1])
     else:

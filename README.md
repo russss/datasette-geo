@@ -54,7 +54,10 @@ Configure it in your `metadata.json`:
     }
 ```
 ### MapTiler
-[MapTiler](https://maptiler.com) is another source of vector tile data which is cheaper than Mapbox. [Choose your map](https://cloud.maptiler.com/maps/) and you'll be given a vector style URL:
+[MapTiler](https://maptiler.com) is another source of vector tile data which is cheaper than Mapbox. By way of full disclosure,
+they currently sponsor some of my personal projects with free vector tile access.
+
+[Choose your map](https://cloud.maptiler.com/maps/) and you'll be given a vector style URL:
 ```json
     "plugins": {
 	    "datasette-geo": {

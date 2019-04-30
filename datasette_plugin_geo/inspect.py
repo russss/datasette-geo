@@ -34,6 +34,10 @@ def get_bounds(conn, spatial_tables):
                 table=table, column=column
             )
         )
-        bbox = wkt.loads(c.fetchone()[0])
+        data = c.fetchone()[0]
+        if data is None:
+            continue
+
+        bbox = wkt.loads(data)
         res[table] = bbox.bounds
     return res

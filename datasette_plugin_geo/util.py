@@ -15,6 +15,8 @@ def get_geo_column(datasette, database, table):
 
 
 def from_spatialite_geom(geom):
+    if geom is None:
+        return None
     # Eviscerate the ridiculous Spatialite binary geometry format
     # and reassemble it into something which hopefully looks like WKB.
     #
