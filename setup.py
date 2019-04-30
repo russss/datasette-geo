@@ -4,9 +4,9 @@ VERSION = '0.1'
 
 setup(
     name='datasette-geo',
-    description='TODO',
+    description='A Datasette plugin to make Spatialite databases effortlessly explorable',
     author='Russ Garrett',
-    url='TODO',
+    url='https://github.com/russss/datasette-geo',
     license='Apache License, Version 2.0',
     version=VERSION,
     py_modules=['datasette_plugin_geo'],
@@ -15,5 +15,10 @@ setup(
             'plugin_geo = datasette_plugin_geo'
         ]
     },
-    install_requires=['datasette']
+    install_requires=[
+        'datasette',
+        'shapely',
+        'mapbox_vector_tile',
+        'mercantile',
+    ]
 )
