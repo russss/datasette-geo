@@ -62,13 +62,10 @@ class MVTServer(object):
             geo_column=geo_column,
             index_query=spatial_index_query(table, polygon_from_bounds(bounds)),
         )
-        start = time.time()
         try:
             res = await self.datasette.execute(db_name, sql)
         except InterruptedError:
             raise ServiceUnavailable("Query timed out")
-
-        print("SQL: {:.3}s".format(time.time() - start))
 
         return [self.layer_from_result(table, res)]
 
