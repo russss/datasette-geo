@@ -13,9 +13,17 @@ A plugin to make Spatialite databases effortlessly explorable with [Datasette](h
 * GeoJSON export endpoints
 * Maybe more?
 
+## Database Preparation
+The database you're using needs to have the geographic data stored in Spatialite geometry columns. These columns must be indexed, which you can do with the following SQL:
+```sql
+	SELECT CreateSpatialIndex('table_name', 'column_name');
+```
+
 ## Configuration
 
-Once installed, Datasette Geo should work out of the box, automatically detecting the Spatialite column in your tables
+You'll need to make sure the Spatialite module is loaded by Datasette, [as described in the docs](https://datasette.readthedocs.io/en/stable/spatialite.html).
+
+After this, Datasette Geo should work out of the box, automatically detecting the Spatialite column in your tables
 and rendering them. You may want to increase your `sql_time_limit_ms` configuration setting to allow enough time for
 large vector tiles to be rendered.
 
