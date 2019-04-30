@@ -16,6 +16,7 @@ function geo_init_map(options) {
     container: 'datasette-geo-map',
     style: options['style'],
     fitBoundsOptions: {maxZoom: 10},
+    refreshExpiredTiles: false,
     bounds: new mapboxgl.LngLatBounds(
       [options['bounds'][0], options['bounds'][1]],
       [options['bounds'][2], options['bounds'][3]],
