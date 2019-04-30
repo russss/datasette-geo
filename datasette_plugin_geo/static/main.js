@@ -21,6 +21,7 @@ function geo_init_map(options) {
       [options['bounds'][2], options['bounds'][3]],
     ),
   });
+  map.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
   // We need to wait for initial style to load before we add our own layers.
   // But this callback gets called on every style change so make sure it's
