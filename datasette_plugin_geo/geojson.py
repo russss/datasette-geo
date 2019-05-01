@@ -12,7 +12,6 @@ def row_to_feature(row, geo_column):
 
 
 def geojson_render(datasette, args, data, view_name):
-    print(data)
     if view_name not in ("row", "table"):
         return None
 
