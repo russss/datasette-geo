@@ -12,6 +12,7 @@ def row_to_feature(row, geo_column):
 
 
 def geojson_render(datasette, args, data, view_name):
+    print(data)
     if view_name not in ("row", "table"):
         return None
 
@@ -26,5 +27,8 @@ def geojson_render(datasette, args, data, view_name):
             "type": "FeatureCollection",
             "features": [row_to_feature(row, geo_column) for row in data["rows"]],
         }
+        for k, v in data.items():
+            if k != 'rows':
+                gj[k] = v
 
     return {"content_type": "application/vnd.geo+json", "body": json.dumps(gj)}
